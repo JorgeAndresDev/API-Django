@@ -1,0 +1,10 @@
+.vscode
+venv
+.venv
+__pycache__
+/__pychache__
+keys
+.keys
+
+.env
+credentials
