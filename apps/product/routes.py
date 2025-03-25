@@ -7,7 +7,7 @@ from typing import List
 router = APIRouter(prefix="/products", tags=["products"])
 
 # Endpoint para obtener todos los productos
-@router.get("/", response_model=List[ProductSchema])
+@router.get("/get_all_products")
 async def get_products():
     try:
         # Obtener todos los productos desde el servicio
