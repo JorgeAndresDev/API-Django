@@ -6,36 +6,7 @@ from typing import List
 router = APIRouter(prefix="/users", tags=["users"])
 
 # Endpoint para obtener todos los usuarios
-@router.get(
-    "/",
-    response_model=List[UserSchema],
-    summary="Get users",
-    description="Obtiene una lista de todos los usuarios registrados en la base de datos.",
-    responses={
-        200: {
-            "description": "Lista de usuarios obtenida exitosamente",
-            "content": {
-                "application/json": {
-                    "example": [
-                        {
-                            "id": "12345",
-                            "user": "johndoe",
-                            "password": "4321",
-                        },
-                    ]
-                }
-            }
-        },
-        500: {
-            "description": "Error interno del servidor",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Error al obtener los usuarios"}
-                }
-            }
-        }
-    }
-)
+@router.get("/get_all_users")
 async def get_users():
     try:
         users = get_all_users()

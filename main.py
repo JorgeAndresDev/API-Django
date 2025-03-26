@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from apps.auth.router import auth
 from apps.user.routes import router as users_router
 from apps.product.routes import router as products_router
+from apps.employees.router import router as employees_router
 from fastapi.middleware.cors import CORSMiddleware
 
 # Crear la aplicación FastAPI
@@ -9,7 +10,7 @@ app = FastAPI()
 
 # Configurar CORS
 origins = [
-    "http://127.0.0.1:8000",  # Origen del frontend
+    '*',  # Origen del frontend
 ]
 
 app.add_middleware(
@@ -28,3 +29,6 @@ app.include_router(users_router)
 
 # Registrar rutas para listar productos
 app.include_router(products_router)
+
+# Registrar rutas para listar productos
+app.include_router(employees_router)
