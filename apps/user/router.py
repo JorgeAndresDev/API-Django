@@ -4,7 +4,7 @@ from flask import jsonify, request
 import pandas as pd
 
 from apps.employees.services import upload_file_service
-from conexion.conexionBD import connectionBD
+from conexion.conexionBD import connectiondb
 
 from .services import get_all_users, update_user, delete_user, create_user
 from .schemas import UserSchema, UserUpdateSchema, UserCreateSchema
