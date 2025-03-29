@@ -36,9 +36,9 @@ def get_all_employees_service():
 
 def upload_file_service(file: UploadFile):
     try:
-        # Leer el archivo correctamente en FastAPI
-        file_contents = file.file.read()  # Leer el contenido en bytes
-        df = pd.read_excel(BytesIO(file_contents))  # Convertirlo en DataFrame
+        # Volver a posicionar el puntero para leer el archivo
+        file.file.seek(0)
+        df = pd.read_excel(file.file)  # Convertirlo en DataFrame
 
         # Verificar si el archivo está vacío
         if df.empty:
