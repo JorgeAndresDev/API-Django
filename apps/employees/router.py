@@ -1,7 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-
-
+from conexion.conexionBD import conexiondb
 from apps.employees.services import get_all_employees_service, upload_file_service
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
@@ -19,11 +18,28 @@ async def get_all_employees():
 @router.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        data = upload_file_service(file)
-        
+        data = await upload_file_service(file)
         if "error" in data:
             return JSONResponse(data, status_code=400)
         return JSONResponse(data, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.delete("/empleados/{cc}")
+async def eliminar_empleado(cc: int):
+    try:
+        conexion = conexiondb()
+        if not conexion:
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
+        cursor = conexion.cursor()
+        query = "DELETE FROM tbl_empleados WHERE cc = %s"
+        cursor.execute(query, (cc,))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return {"mensaje": "Empleado eliminado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

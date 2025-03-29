@@ -1,14 +1,11 @@
-from fastapi import File, UploadFile
-from conexion import conexionBD
-from conexion.conexionBD import connectionBD 
-from flask import jsonify, request
 import pandas as pd
-from io import BytesIO
+from fastapi import UploadFile
+from conexion.conexionBD import conexiondb
 
 
 def get_all_employees_service():     
     try:         
-        connection = connectionBD()         
+        connection = conexiondb()         
         if connection:             
             with connection.cursor(dictionary=True) as cursor:                 
                 querySQL = """                     
@@ -32,33 +29,32 @@ def get_all_employees_service():
         if connection:             
             connection.close()
 
- 
-
-def upload_file_service(file: UploadFile):
+async def upload_file_service(file: UploadFile):
     try:
         # Volver a posicionar el puntero para leer el archivo
         file.file.seek(0)
         df = pd.read_excel(file.file)  # Convertirlo en DataFrame
 
-        # Verificar si el archivo está vacío
+        # Verificar si está vacío
         if df.empty:
             return {"error": "El archivo está vacío"}
 
-        # Reemplazar NaN por 0
-        df = df.fillna(0)
+        df.fillna(0, inplace=True)  # Reemplazar NaN por 0
 
-        # Conectar a la base de datos
-        conn = conexionBD()
+        # Conectar a la BD
+        conn = conexiondb()
+        if not conn:
+            return {"error": "No se pudo conectar a la base de datos"}
+        
         cursor = conn.cursor(dictionary=True)
 
-        # Iterar sobre las filas del DataFrame
+        # Insertar o actualizar datos en la BD
         for _, row in df.iterrows():
             sql_check = "SELECT * FROM tbl_empleados WHERE CC = %s"
             cursor.execute(sql_check, (row["CC"],))
             empleado_existente = cursor.fetchone()
 
             if empleado_existente:
-                # Si el empleado existe, actualizar sus datos
                 sql_update = """
                     UPDATE tbl_empleados SET NOM = %s, CAR = %s, CENTRO = %s, CASH = %s, 
                     SAC = %s, `CHECK` = %s, `MOD` = %s, ER = %s, PARADAS = %s, PERFORMANCE = %s 
@@ -69,7 +65,6 @@ def upload_file_service(file: UploadFile):
                     row["CHECK"], row["MOD"], row["ER"], row["PARADAS"], row["PERFORMANCE"], row["CC"]
                 ))
             else:
-                # Si el empleado no existe, insertarlo
                 sql_insert = """
                     INSERT INTO tbl_empleados (CC, NOM, CAR, CENTRO, CASH, SAC, `CHECK`, `MOD`, ER, PARADAS, PERFORMANCE)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -78,14 +73,36 @@ def upload_file_service(file: UploadFile):
                     row["CC"], row["NOM"], row["CAR"], row["CENTRO"], row["CASH"], 
                     row["SAC"], row["CHECK"], row["MOD"], row["ER"], row["PARADAS"], row["PERFORMANCE"]
                 ))
-            
-            conn.commit()  # Guardar cambios en la BD
 
-        # Cerrar conexión
+        conn.commit()  # Guardar cambios
         cursor.close()
         conn.close()
 
-        return {"message": "Base de datos actualizada correctamente", "success": True}
+        return {"success": True, "message": "Base de datos actualizada correctamente"}
 
     except Exception as e:
         return {"error": str(e)}
+
+
+
+def eliminar_empleado(cc: int):
+    conexion = conexiondb()
+    if not conexion:
+        return {"error": "Error de conexión a la base de datos"}
+
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM tbl_empleados WHERE cc = %s", (cc,))
+        conexion.commit()
+
+        if cursor.rowcount == 0:
+            return {"error": "Empleado no encontrado"}
+
+        return {"mensaje": "Empleado eliminado correctamente"}
+
+    except Exception as e:
+        return {"error": f"Error al eliminar empleado: {str(e)}"}
+
+    finally:
+        cursor.close()
+        conexion.close()

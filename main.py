@@ -3,6 +3,7 @@ from apps.auth.router import auth
 from apps.user.router import router as users_router
 from apps.product.routes import router as products_router
 from apps.employees.router import router as employees_router
+from apps.usersSQL.router import router as usersSQl_router
 from fastapi.middleware.cors import CORSMiddleware
 
 # Crear la aplicación FastAPI
@@ -30,5 +31,9 @@ app.include_router(users_router)
 # Registrar rutas para listar productos
 app.include_router(products_router)
 
-# Registrar rutas para listar productos
+# Registrar rutas para listar empleados
 app.include_router(employees_router)
+
+# Registrar rutas para listar usuariosSQL
+app.include_router(usersSQl_router)
+
