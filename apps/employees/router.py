@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from conexion.conexionBD import conexiondb
-from apps.employees.services import get_all_employees_service, upload_file_service
+from apps.employees.services import download_employees_report_service, get_all_employees_service, upload_file_service
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -41,5 +41,20 @@ async def eliminar_empleado(cc: int):
         conexion.close()
 
         return {"mensaje": "Empleado eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
+from fastapi.responses import FileResponse
+
+@router.get('/descargar-informe-empleados')
+async def descargar_informe_empleados():
+    try:
+        output, filename = download_employees_report_service()  # output debe ser BytesIO
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
