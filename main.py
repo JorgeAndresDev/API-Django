@@ -5,6 +5,7 @@ from apps.product.routes import router as products_router
 from apps.employees.router import router as employees_router
 from apps.usersSQL.router import router as usersSQl_router
 from fastapi.middleware.cors import CORSMiddleware
+from apps.botiquin.router import router as botiquin_router
 
 # Crear la aplicación FastAPI
 app = FastAPI()
@@ -36,4 +37,6 @@ app.include_router(employees_router)
 
 # Registrar rutas para listar usuariosSQL
 app.include_router(usersSQl_router)
+
+app.include_router(botiquin_router)
 
