@@ -92,3 +92,4 @@ async def eliminar_inspeccion(id_inspeccion: int):
         return {"success": True, "message": "Inspección eliminada correctamente"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+

@@ -220,4 +220,4 @@ def eliminarInspeccion(id_inspeccion):
                 return cursor.rowcount 
     except Exception as e:
         print(f"Error en eliminarInspeccion: {e}")
-        return None
+        return None 
