@@ -1,7 +1,10 @@
 from conexion.conexionBD import conexiondb
-from apps.botiquin.services import procesar_form_inspeccion_botiquin, sql_lista_inspeccionesBD, buscarInspeccionBD, buscarInspeccionBD, procesar_actualizacion_inspeccion,eliminarInspeccion
+from apps.botiquin.services import procesar_form_inspeccion_botiquin, sql_lista_inspeccionesBD, procesar_actualizacion_inspeccion,eliminarInspeccion, generar_reporte_inspecciones
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
+
+
 
 router = APIRouter(prefix='/botiquin', tags=['botiquin'])
 
@@ -12,84 +15,65 @@ async def procesar_form_inspeccion_botiquin_endpoint(data: dict):
     """
     try:
         resultado = procesar_form_inspeccion_botiquin(data)
+        if "error" in resultado:
+            return {"success": False, "error": resultado["error"]}
         return {"success": True, "data": resultado}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 @router.get("/sql_lista_inspeccionesBD")
-async def sql_lista_inspeccionesBD():
+async def obtener_lista_inspecciones():
     """
-    Obtiene la lista de inspecciones desde la base de datos.
-    """
-    try:
-        conexion = conexiondb()
-        query = "SELECT * FROM inspeccion_carretillas"
-        inspecciones = conexion.execute(query).fetchall()
-        return {"success": True, "data": [dict(row) for row in inspecciones]}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-@router.get("/buscarInspeccionBD    /{id_inspeccion}") 
-async def buscar_inspeccion_bd(id_inspeccion: int):
-    """
-    Busca una inspección específica en la base de datos por su ID.
+    Endpoint para obtener la lista de inspecciones desde la base de datos.
     """
     try:
-        conexion = conexiondb()
-        query = "SELECT * FROM inspecciones WHERE id = :id_inspeccion"
-        inspeccion = conexion.execute(query, {"id_inspeccion": id_inspeccion}).fetchone()
-        if inspeccion:
-            return {"success": True, "data": dict(inspeccion)}
+        resultado = sql_lista_inspeccionesBD()
+        if resultado is not None and len(resultado) > 0:
+            return {"success": True, "data": resultado}
+        elif resultado == []:
+            return {"success": False, "error": "No hay registros en inspecciones_botiquines"}
         else:
-            return {"success": False, "error": "Inspección no encontrada"}
+            return {"success": False, "error": "Error al ejecutar la consulta"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@router.get("/buscarInspeccionBD/{id_inspeccion}")
-async def buscar_inspeccion_bd_v2(id_inspeccion: int):
-    """
-    Busca una inspección específica en la base de datos por su ID (versión alternativa).
-    """
-    try:
-        conexion = conexiondb()
-        query = "SELECT * FROM inspecciones WHERE id = :id_inspeccion"
-        inspeccion = conexion.execute(query, {"id_inspeccion": id_inspeccion}).fetchone()
-        if inspeccion:
-            return {"success": True, "data": dict(inspeccion)}
-        else:
-            return {"success": False, "error": "Inspección no encontrada"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
-@router.get("/procesar_actualizacion_inspeccion")
-async def procesar_actualizacion_inspeccion(id_inspeccion: int, data: dict):
+
+@router.put("/procesar_actualizacion_inspeccion/{id_inspeccion}")
+async def procesar_actualizacion_inspeccion_api(id_inspeccion: int, data: dict):
     """
     Procesa la actualización de una inspección específica en la base de datos.
     """
     try:
-        conexion = conexiondb()
-        query = """
-        UPDATE inspecciones
-        SET campo1 = :campo1, campo2 = :campo2
-        WHERE id = :id_inspeccion
-        """
-        conexion.execute(query, {**data, "id_inspeccion": id_inspeccion})
-        conexion.commit()
-        return {"success": True, "message": "Inspección actualizada correctamente"}
+        # Llama a la función que ya está bien estructurada
+        data["id_inspeccion"] = id_inspeccion  # Agrega el ID al diccionario de datos
+        resultado = procesar_actualizacion_inspeccion(data)
+
+        if resultado:
+            return {"success": True, "message": "Inspección actualizada correctamente"}
+        else:
+            return {"success": False, "error": "No se pudo actualizar la inspección"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-@router.delete("/eliminarInspeccion /{id_inspeccion}")
+@router.delete("/eliminarInspeccion/{id_inspeccion}")
 async def eliminar_inspeccion(id_inspeccion: int):
     """
     Elimina una inspección específica de la base de datos por su ID.
     """
     try:
-        conexion = conexiondb()
-        query = "DELETE FROM inspecciones WHERE id = :id_inspeccion"
-        conexion.execute(query, {"id_inspeccion": id_inspeccion})
-        conexion.commit()
-        return {"success": True, "message": "Inspección eliminada correctamente"}
+        resultado = eliminarInspeccion(id_inspeccion)
+        return resultado
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
+@router.get("/descargar-reporte-inspecciones")
+async def reporteInspeccionesExcel():
+    try:
+        reporte = generar_reporte_inspecciones()
+        if isinstance(reporte, FileResponse):
+            return reporte
+        return reporte  # Devuelve el error en formato JSON
+    except Exception as e:
+        return {"success": False, "error": str(e)}
