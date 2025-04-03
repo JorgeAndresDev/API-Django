@@ -1,7 +1,11 @@
+import datetime
+from io import BytesIO
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from flask import make_response
+import pandas as pd
+from apps.employees.services import delete_employee_service, get_all_employees_service, upload_file_service
 from conexion.conexionBD import conexiondb
-from apps.employees.services import get_all_employees_service, upload_file_service
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -26,20 +30,11 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/empleados/{cc}")
-async def eliminar_empleado(cc: int):
+@router.delete("/delete_employee/{cc}")
+async def delete_employee(cc: str):
     try:
-        conexion = conexiondb()
-        if not conexion:
-            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
-        
-        cursor = conexion.cursor()
-        query = "DELETE FROM tbl_empleados WHERE cc = %s"
-        cursor.execute(query, (cc,))
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-        return {"mensaje": "Empleado eliminado exitosamente"}
+        employees = delete_employee_service(cc)
+        return employees
     except Exception as e:
+        # Manejar errores y devolver una respuesta de error 500
         raise HTTPException(status_code=500, detail=str(e))

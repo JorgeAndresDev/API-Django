@@ -1,5 +1,8 @@
+import datetime
+from io import BytesIO
+from flask import make_response
 import pandas as pd
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 from conexion.conexionBD import conexiondb
 
 
@@ -84,25 +87,27 @@ async def upload_file_service(file: UploadFile):
         return {"error": str(e)}
 
 
-
-def eliminar_empleado(cc: int):
-    conexion = conexiondb()
-    if not conexion:
-        return {"error": "Error de conexión a la base de datos"}
-
+async def delete_employee_service(cc: int):
     try:
+        conexion = conexiondb()
+        if not conexion:
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
         cursor = conexion.cursor()
-        cursor.execute("DELETE FROM tbl_empleados WHERE cc = %s", (cc,))
+        # Verificar si el empleado existe
+        query_check = "SELECT * FROM tbl_empleados WHERE cc = %s"
+        cursor.execute(query_check, (cc,))
+        empleado = cursor.fetchone()
+        if not empleado:
+            raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+        # Eliminar el empleado
+        query_delete = "DELETE FROM tbl_empleados WHERE cc = %s"
+        cursor.execute(query_delete, (cc,))
         conexion.commit()
-
-        if cursor.rowcount == 0:
-            return {"error": "Empleado no encontrado"}
-
-        return {"mensaje": "Empleado eliminado correctamente"}
-
-    except Exception as e:
-        return {"error": f"Error al eliminar empleado: {str(e)}"}
-
-    finally:
         cursor.close()
         conexion.close()
+
+        return {"mensaje": "Empleado eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
