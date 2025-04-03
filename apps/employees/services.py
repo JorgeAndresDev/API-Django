@@ -108,11 +108,9 @@ async def delete_employee_service(cc: int):
         cursor.close()
         conexion.close()
 
-<<<<<<< HEAD
         return {"mensaje": "Empleado eliminado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-=======
 
 def download_employees_report_service():
     try:
@@ -186,4 +184,3 @@ def download_employees_report_service():
     except Exception as e:
         # Manejo de errores
         return f"Error al generar el informe: {str(e)}", 500
->>>>>>> 32cb5158661a4154c9dbf0b485c5ef15d8fe4db7
