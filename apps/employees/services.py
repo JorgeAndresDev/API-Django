@@ -108,6 +108,82 @@ async def delete_employee_service(cc: int):
         cursor.close()
         conexion.close()
 
+<<<<<<< HEAD
         return {"mensaje": "Empleado eliminado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+=======
+
+def download_employees_report_service():
+    try:
+        # Conectar a la base de datos
+        conn = conexiondb()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Consultar todos los datos de la tabla de empleados
+        sql = "SELECT * FROM tbl_empleados"
+        cursor.execute(sql)
+        empleados = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        if not empleados:
+            # Si no hay datos, puedes mostrar un mensaje o redirigir
+            return "La base de datos esta vacia, no se puede generer un reporte :("
+        
+        # Crear un DataFrame con los datos
+        df = pd.DataFrame(empleados)
+        
+        # Crear un buffer para el archivo Excel
+        output = BytesIO()
+        
+        # Crear un writer de Excel
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        
+        # Escribir el DataFrame al archivo Excel
+        df.to_excel(writer, sheet_name='Empleados', index=False)
+        
+        # Obtener el libro de trabajo y la hoja
+        workbook = writer.book
+        worksheet = writer.sheets['Empleados']
+        
+        # Añadir formato a las columnas (opcional)
+        # Por ejemplo, formato para columnas numéricas y porcentuales
+        formato_porcentaje = workbook.add_format({'num_format': '0.00%'})
+        formato_numero = workbook.add_format({'num_format': '0.00'})
+        
+        # Aplicar formato a columnas específicas (ajusta los índices según tus columnas)
+        # Por ejemplo, si CHECK, MOD, ER son porcentajes:
+        for col_idx, col_name in enumerate(df.columns):
+            if col_name in ['CHECK', 'MOD', 'ER', 'PERFORMANCE']:
+                # Convertir de texto a número si es necesario
+                worksheet.set_column(col_idx, col_idx, 12, formato_porcentaje)
+            elif col_name in ['CASH', 'SAC', 'PARADAS']:
+                worksheet.set_column(col_idx, col_idx, 12, formato_numero)
+        
+        # Ajustar el ancho de las columnas automáticamente
+        for i, col in enumerate(df.columns):
+            column_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet.set_column(i, i, column_width)
+        
+        # Guardar el archivo
+        writer.close()
+        
+        # Reiniciar el puntero del buffer al principio
+        output.seek(0)
+        
+        # Configurar la respuesta para la descarga del archivo
+        fecha_actual = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"Informe_Empleados_{fecha_actual}.xlsx"
+        
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+        
+        return response
+        
+    except Exception as e:
+        # Manejo de errores
+        return f"Error al generar el informe: {str(e)}", 500
+>>>>>>> 32cb5158661a4154c9dbf0b485c5ef15d8fe4db7
