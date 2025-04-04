@@ -1,3 +1,10 @@
+import datetime
+from io import BytesIO
+from flask import make_response
+import pandas as pd
+from fastapi import UploadFile
+from conexion.conexionBD import conexiondb
+
 def procesar_form_inspeccion_caja(dataForm):
     try:
         # Validación de campos requeridos
@@ -46,16 +53,17 @@ def procesar_form_inspeccion_caja(dataForm):
         if 'conexion_MySQLdb' in locals():
             conexion_MySQLdb.rollback()
         return None
-    
+
 
 
 def obtener_inspecciones_cajas():
+    import traceback
     try:
         with conexiondb() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor(dictionary=True) as cursor:
                 querySQL = """
                     SELECT 
-                        id_inspeccion,
+                        id_inspeccion_cf AS id_inspeccion,
                         placa_vehiculo,
                         puerta_estado,
                         puerta_facilidad,
@@ -70,90 +78,24 @@ def obtener_inspecciones_cajas():
                     ORDER BY fecha_inspeccion DESC
                 """
                 cursor.execute(querySQL)
-                return cursor.fetchall()
+                resultados = cursor.fetchall()
+                print("Resultados:", resultados)
+                return resultados
     except Exception as e:
-        print(f"Error en obtener_inspecciones_cajas: {str(e)}")
+        print("Error en obtener_inspecciones_cajas:")
+        traceback.print_exc()
         return None
 
 
-def buscar_inspeccion_por_placa(placa):
-    try:
-        with conexiondb() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(dictionary=True) as cursor:
-                querySQL = """
-                    SELECT * FROM inspeccion_cajas_fuertes 
-                    WHERE placa_vehiculo LIKE %s
-                    ORDER BY fecha_inspeccion DESC
-                """
-                cursor.execute(querySQL, (f"%{placa}%",))
-                return cursor.fetchall()
-    except Exception as e:
-        print(f"Error en buscar_inspeccion_por_placa: {str(e)}")
-        return None
 
-
-def generar_reporte_inspecciones_excel():
-    try:
-        inspecciones = obtener_inspecciones_cajas()
-        if not inspecciones:
-            return None
-
-        wb = openpyxl.Workbook()
-        hoja = wb.active
-        hoja.title = "Inspecciones Cajas Fuertes"
-
-        # Encabezados
-        cabeceras = [
-            "ID", "Placa Vehículo", "Puerta Estado", "Puerta Facilidad", 
-            "Clave Precisa", "Clave Autorizada", "Perilla Funciona",
-            "Números Visibles", "Caja Anclada", "Observaciones", "Fecha Inspección"
-        ]
-        hoja.append(cabeceras)
-
-        # Datos
-        for inspeccion in inspecciones:
-            fila = [
-                inspeccion['id_inspeccion'],
-                inspeccion['placa_vehiculo'],
-                inspeccion['puerta_estado'],
-                inspeccion['puerta_facilidad'],
-                inspeccion['clave_precisa'],
-                inspeccion['clave_autorizada'],
-                inspeccion['perilla_funciona'],
-                inspeccion['numeros_visibles'],
-                inspeccion['caja_anclada'],
-                inspeccion['observaciones'],
-                inspeccion['fecha_inspeccion_formateada']
-            ]
-            hoja.append(fila)
-
-        # Guardar archivo
-        fecha_actual = datetime.datetime.now().strftime('%Y_%m_%d')
-        nombre_archivo = f"Reporte_Inspecciones_{fecha_actual}.xlsx"
-        carpeta_descarga = "../static/downloads-excel"
-        ruta_descarga = os.path.join(os.path.dirname(__file__), carpeta_descarga)
-
-        if not os.path.exists(ruta_descarga):
-            os.makedirs(ruta_descarga)
-            os.chmod(ruta_descarga, 0o755)
-
-        ruta_completa = os.path.join(ruta_descarga, nombre_archivo)
-        wb.save(ruta_completa)
-
-        return send_file(ruta_completa, as_attachment=True)
-
-    except Exception as e:
-        print(f"Error en generar_reporte_inspecciones_excel: {str(e)}")
-        return None
     
-    
-def obtener_detalle_inspeccion(id_inspeccion):
+def obtener_detalle_inspeccion(id_inspeccion_cf):
     try:
         with conexiondb() as conexion_MySQLdb:
             with conexion_MySQLdb.cursor(dictionary=True) as cursor:
                 querySQL = """
                     SELECT 
-                        id_inspeccion,
+                        id_inspeccion_cf,
                         placa_vehiculo,
                         puerta_estado,
                         puerta_facilidad,
@@ -166,35 +108,38 @@ def obtener_detalle_inspeccion(id_inspeccion):
                         IFNULL(DATE_FORMAT(fecha_inspeccion, '%d/%m/%Y %H:%i'), 'No registrada') AS fecha_inspeccion_formateada,
                         fecha_inspeccion
                     FROM inspeccion_cajas_fuertes
-                    WHERE id_inspeccion = %s
+                    WHERE id_inspeccion_cf = %s
                 """
-                cursor.execute(querySQL, (id_inspeccion,))
+                cursor.execute(querySQL, (id_inspeccion_cf,))
                 return cursor.fetchone()
     except Exception as e:
         print(f"Error en obtener_detalle_inspeccion: {str(e)}")
         return None
     
-# Función para eliminar inspección
-def eliminar_inspeccion_bd(id_inspeccion):
+
+def eliminar_inspeccion_cf(id_inspeccion_cf: int):
     try:
-        with conexiondb() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor(dictionary=True) as cursor:
-                # Verificar si existe la inspección
-                cursor.execute("SELECT id_inspeccion FROM inspeccion_cajas_fuertes WHERE id_inspeccion = %s", (id_inspeccion,))
-                if not cursor.fetchone():
-                    return {'success': False, 'message': 'La inspección no existe'}
-
-                # Eliminar la inspección
-                cursor.execute("DELETE FROM inspeccion_cajas_fuertes WHERE id_inspeccion = %s", (id_inspeccion,))
-                conexion_MySQLdb.commit()
-                return {'success': True, 'message': 'Inspección eliminada correctamente'}
-
+        connectado = conexiondb()  # Conexión a la base de datos
+        if connectado:
+            with connectado.cursor() as cursor:
+                # Consulta para eliminar la inspección
+                cursor.execute("DELETE FROM inspeccion_cajas_fuertes WHERE id_inspeccion_cf = %s", (id_inspeccion_cf,))
+                connectado.commit()
+                # Verificar si se eliminó alguna fila
+                if cursor.rowcount > 0:
+                    return {'success': True, 'message': 'Inspección eliminada correctamente'}
+                else:
+                    return {'success': False, 'message': 'Inspección no encontrada'}
+        else:
+            return {'success': False, 'message': 'Error al conectar a la base de datos'}
     except Exception as e:
-        print(f"Error en eliminar_inspeccion_bd: {str(e)}")
-        return {'success': False, 'message': f'Error al eliminar: {str(e)}'}
-
+        print(f"Error en eliminar_inspeccion_cf: {str(e)}")
+        return {'success': False, 'error': str(e)}
+    finally:
+        if 'connectado' in locals() and connectado:
+            connectado.close()
 # Función para actualizar inspección
-def actualizar_inspeccion_bd(id_inspeccion, data_form):
+def actualizar_inspeccion_bd(id_inspeccion_cf, data_form):
     try:
         campos_requeridos = [
             'placa_vehiculo', 'puerta_estado', 'puerta_facilidad',
@@ -221,7 +166,7 @@ def actualizar_inspeccion_bd(id_inspeccion, data_form):
                         numeros_visibles = %s,
                         caja_anclada = %s,
                         observaciones = %s
-                    WHERE id_inspeccion = %s
+                    WHERE id_inspeccion_cf = %s
                 """
                 valores = (
                     data_form['placa_vehiculo'].strip().upper(),
@@ -233,7 +178,7 @@ def actualizar_inspeccion_bd(id_inspeccion, data_form):
                     data_form['numeros_visibles'],
                     data_form['caja_anclada'],
                     data_form.get('observaciones', ''),
-                    id_inspeccion
+                    id_inspeccion_cf
                 )
                 cursor.execute(sql, valores)
                 conexion_MySQLdb.commit()
