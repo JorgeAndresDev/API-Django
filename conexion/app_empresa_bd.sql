@@ -106,3 +106,17 @@ CREATE TABLE `inspeccion_cajas_fuertes` (
   `fecha_inspeccion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_inspeccion`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `tbl_conductores` (
+  `id_conductor` INT NOT NULL AUTO_INCREMENT,
+  `nombre_apellido` VARCHAR(50) DEFAULT NULL,
+  `cedula` INT DEFAULT NULL,
+  `cargo` VARCHAR(50) DEFAULT NULL,
+  `vencimiento_licencia` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `dias_restantes_licencia` INT DEFAULT NULL,
+  `comparendos` VARCHAR(50) DEFAULT NULL,
+  `acuerdo_pago` VARCHAR(50) DEFAULT NULL,
+  `vencimiento_curso` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `dias_restantes_curso` INT DEFAULT NULL,
+  PRIMARY KEY (`id_conductor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

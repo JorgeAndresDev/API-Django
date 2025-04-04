@@ -1,7 +1,7 @@
 import pandas as pd
 from fastapi import HTTPException, UploadFile
 from apps.drivers.schemas import DriverCreateSchema, DriverUpdateSchema
-from conexion.conexionW.conexionBDW import conexiondbw
+from conexion.conexionBD import conexiondb
 
 # Columnas requeridas en el Excel
 COLUMNAS_REQUERIDAS = [
@@ -25,7 +25,7 @@ MAPEO_COLUMNAS = {
 
 def get_all_drivers_service():     
     try:         
-        connection = conexiondbw()         
+        connection = conexiondb()         
         if connection:             
             with connection.cursor(dictionary=True) as cursor:                 
                 querySQL = """                     
@@ -57,7 +57,7 @@ def get_all_drivers_service():
 
 def create_driver_service(driver_data: DriverCreateSchema):
     try:
-        connection = conexiondbw()
+        connection = conexiondb()
         cursor = connection.cursor()
         cursor.execute("INSERT INTO tbl_conductores (id_conductor, cedula, nombre_apellido, cargo, vencimiento_licencia, dias_restantes_licencia, comparendos, acuerdo_pago, vencimiento_curso, dias_restantes_curso) VALUES (%s, %s, %s , %s, %s, %s, %s, %s, %s, %s)", 
                (driver_data.id_conductor, driver_data.cedula, driver_data.nombre_apellido, driver_data.cargo, driver_data.vencimiento_licencia, driver_data.dias_restantes_licencia, driver_data.comparendos, driver_data.acuerdo_pago, driver_data.vencimiento_curso, driver_data.dias_restantes_curso ))
@@ -72,7 +72,7 @@ def create_driver_service(driver_data: DriverCreateSchema):
     
 def update_driver_service(driver: DriverUpdateSchema):
     try:
-        connection = conexiondbw()
+        connection = conexiondb()
         if connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -202,7 +202,7 @@ async def upload_file_service(file: UploadFile):
 
 async def delete_driver_service(id_conductor: int):
     try:
-        conexion = conexiondbw()
+        conexion = conexiondb()
         if not conexion:
             raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
         
