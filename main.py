@@ -7,7 +7,7 @@ from apps.usersSQL.router import router as usersSQl_router
 from apps.usersSQLW.router import router as usersSQlW_router
 from apps.drivers.router import router as conductores_router
 from fastapi.middleware.cors import CORSMiddleware
-from apps.botiquin.router import router as botiquin_router
+# from apps.botiquin.router import router as botiquin_router
 from apps.safe.router import router as safe_router
 
 # Crear la aplicación FastAPI
@@ -47,7 +47,7 @@ app.include_router(usersSQlW_router)
 # Registrar rutas para listar usuariosSQL
 app.include_router(conductores_router)
 
-app.include_router(botiquin_router)
+# app.include_router(botiquin_router)
 
 app.include_router(safe_router)
 

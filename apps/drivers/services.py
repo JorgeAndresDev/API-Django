@@ -1,6 +1,6 @@
 import pandas as pd
 from fastapi import HTTPException, UploadFile
-from apps.drivers.schemas import DriverCreateSchema
+from apps.drivers.schemas import DriverCreateSchema, DriverUpdateSchema
 from conexion.conexionW.conexionBDW import conexiondbw
 
 # Columnas requeridas en el Excel
@@ -29,7 +29,8 @@ def get_all_drivers_service():
         if connection:             
             with connection.cursor(dictionary=True) as cursor:                 
                 querySQL = """                     
-                    SELECT                         
+                    SELECT   
+                        id_conductor,                      
                         cedula,                    
                         nombre_apellido,   
                         cargo,
@@ -58,8 +59,8 @@ def create_driver_service(driver_data: DriverCreateSchema):
     try:
         connection = conexiondbw()
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO tbl_conductores (cedula, nombre_apellido, cargo, vencimiento_licencia, dias_restantes_licencia, comparendos, acuerdo_pago, vencimiento_curso, dias_restantes_curso) VALUES (%s, %s, %s , %s, %s, %s, %s, %s, %s)", 
-               (driver_data.cedula, driver_data.nombre_apellido, driver_data.cargo, driver_data.vencimiento_licencia, driver_data.dias_restantes_licencia, driver_data.comparendos, driver_data.acuerdo_pago, driver_data.vencimiento_curso, driver_data.dias_restantes_curso ))
+        cursor.execute("INSERT INTO tbl_conductores (id_conductor, cedula, nombre_apellido, cargo, vencimiento_licencia, dias_restantes_licencia, comparendos, acuerdo_pago, vencimiento_curso, dias_restantes_curso) VALUES (%s, %s, %s , %s, %s, %s, %s, %s, %s, %s)", 
+               (driver_data.id_conductor, driver_data.cedula, driver_data.nombre_apellido, driver_data.cargo, driver_data.vencimiento_licencia, driver_data.dias_restantes_licencia, driver_data.comparendos, driver_data.acuerdo_pago, driver_data.vencimiento_curso, driver_data.dias_restantes_curso ))
         connection.commit()
         cursor.close()
         connection.close()
@@ -68,6 +69,27 @@ def create_driver_service(driver_data: DriverCreateSchema):
         return {'success':True, "message": "Usuario creado Correctamente"}
     except Exception as e:
         return {"error": str(e)}
+    
+def update_driver_service(driver: DriverUpdateSchema):
+    try:
+        connection = conexiondbw()
+        if connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE tbl_conductores SET cedula = %s, nombre_apellido = %s, cargo = %s, vencimiento_licencia = %s , dias_restantes_licencia = %s, comparendos = %s, acuerdo_pago = %s, vencimiento_curso = %s, dias_restantes_curso = %s WHERE id_conductor = %s",
+                    (driver.cedula,driver.nombre_apellido, driver.cargo, driver.vencimiento_licencia, driver.dias_restantes_licencia, driver.comparendos, driver.acuerdo_pago, driver.vencimiento_curso, driver.dias_restantes_curso, driver.id_conductor)
+                )
+                
+                connection.commit()
+                return {"message": "Conductor actualizado correctamente"}
+
+        else:
+            return {"error": "No se pudo establecer conexión con la base de datos"}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
 
 async def upload_file_service(file: UploadFile):
     try:
@@ -178,7 +200,7 @@ async def upload_file_service(file: UploadFile):
         return {"error": str(e), "detail": error_detail}
 
 
-async def delete_driver_service(cc: int):
+async def delete_driver_service(id_conductor: int):
     try:
         conexion = conexiondbw()
         if not conexion:
@@ -186,15 +208,15 @@ async def delete_driver_service(cc: int):
         
         cursor = conexion.cursor()
         # Verificar si el conductor existe
-        query_check = "SELECT * FROM tbl_conductores WHERE cedula = %s"
-        cursor.execute(query_check, (cc,))
+        query_check = "SELECT * FROM tbl_conductores WHERE id_conductor = %s"
+        cursor.execute(query_check, (id_conductor,))
         conductor = cursor.fetchone()
         if not conductor:
             raise HTTPException(status_code=404, detail="Conductor no encontrado")
 
         # Eliminar el conductor
-        query_delete = "DELETE FROM tbl_conductores WHERE cedula = %s"
-        cursor.execute(query_delete, (cc,))
+        query_delete = "DELETE FROM tbl_conductores WHERE id_conductor = %s"
+        cursor.execute(query_delete, (id_conductor,))
         conexion.commit()
         cursor.close()
         conexion.close()

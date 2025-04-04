@@ -3,8 +3,8 @@ from io import BytesIO
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 import pandas as pd
-from apps.drivers.schemas import DriverCreateSchema
-from apps.drivers.services import create_driver_service, delete_driver_service, get_all_drivers_service, upload_file_service
+from apps.drivers.schemas import DriverCreateSchema, DriverUpdateSchema
+from apps.drivers.services import create_driver_service, delete_driver_service, get_all_drivers_service, update_driver_service, upload_file_service
 
 router = APIRouter(prefix="/drivers", tags=["Conductores"])
 
@@ -27,6 +27,14 @@ async def create_driver(driver: DriverCreateSchema):
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/update_driver")
+async def update_driver(driver: DriverUpdateSchema):
+    try:
+        response = update_driver_service(driver)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
@@ -38,14 +46,12 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/delete_drivers")
-async def delete_driver(cedula: int):  # Cambiado a int para coincidir con el servicio
+@router.delete("/delete_driver")
+async def delete_driver(id_conductor: int):
     try:
-        resultado = await delete_driver_service(cedula)  # Agregado await
+        resultado = await delete_driver_service(id_conductor)
         return resultado
     except HTTPException as he:
-        # Reenviar excepciones HTTP tal cual
         raise he
-    except Exception as e:
-        # Manejar otros errores y devolver una respuesta de error 500
+    except Exception as e:  
         raise HTTPException(status_code=500, detail=str(e))
