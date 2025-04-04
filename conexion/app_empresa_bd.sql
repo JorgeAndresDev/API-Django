@@ -93,7 +93,7 @@ DROP TABLE IF EXISTS `inspeccion_cajas_fuertes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `inspeccion_cajas_fuertes` (
-  `id_inspeccion` int NOT NULL AUTO_INCREMENT,
+  `id_inspeccion_cf` int NOT NULL AUTO_INCREMENT,
   `placa_vehiculo` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `puerta_estado` enum('Si','No') COLLATE utf8mb4_unicode_ci NOT NULL,
   `puerta_facilidad` enum('Si','No') COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE `inspeccion_cajas_fuertes` (
   `caja_anclada` enum('Si','No') COLLATE utf8mb4_unicode_ci NOT NULL,
   `observaciones` text COLLATE utf8mb4_unicode_ci,
   `fecha_inspeccion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_inspeccion`)
+  PRIMARY KEY (`id_inspeccion_cf`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `tbl_conductores` (
