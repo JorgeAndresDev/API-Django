@@ -230,4 +230,28 @@ def actualizar_empleadoBD(cc_original, cc, nom, car, centro):
         print(f"Error en actualizar_empleadoBD: {e}")
         return False
 
+def crear_empleado(cc, nom, car, centro, conexiondb):
+    try:
+        cursor = conexiondb.cursor()
 
+        sql = '''
+            INSERT INTO tbl_empleados (
+                CC, NOM, CAR, CENTRO, CASH, SAC, `CHECK`, MOD, ER, PARADAS, PERFORMANCE
+            ) VALUES (
+                %s, %s, %s, %s,
+                '0', '0', '0', '0', '0', '0', '0'
+            )
+        '''
+
+        valores = (cc, nom, car, centro)
+
+        cursor.execute(sql, valores)
+        conexiondb.commit()
+
+        print(" Empleado creado correctamente.")
+
+    except Exception as e:
+        print(f" Error al crear el empleado: {e}")
+
+    finally:
+        cursor.close()
