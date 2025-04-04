@@ -26,6 +26,27 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post('/crear_empleado')
+async def crear_empleado(cc: int, nom: str, car: str, centro: str):
+    try:
+        conexion = conexiondb()
+        if not conexion:
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
+        cursor = conexion.cursor()
+        query = """
+            INSERT INTO tbl_empleados (cc, nom, car, centro)
+            VALUES (%s, %s, %s, %s)
+        """
+        cursor.execute(query, (cc, nom, car, centro))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return {"mensaje": "Empleado creado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/empleados/{cc}")
 async def eliminar_empleado(cc: int):
     try:
