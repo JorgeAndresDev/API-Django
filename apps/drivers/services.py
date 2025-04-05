@@ -119,7 +119,7 @@ async def upload_file_service(file: UploadFile):
         df.rename(columns=MAPEO_COLUMNAS, inplace=True)
 
         # Conectar a la BD
-        conn = conexiondbw()
+        conn = conexiondb()
         if not conn:
             return {"error": "No se pudo conectar a la base de datos"}
         

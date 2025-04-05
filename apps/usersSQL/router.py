@@ -32,10 +32,10 @@ async def update_user(user: UserUpdateSchema):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.delete("/delete_user/{user_id}")
-async def delete_user(user_id: str):
+@router.delete("/delete_user/{userId}")
+async def delete_user(userId: int):
     try:
-        response = delete_user_service(user_id)
+        response = delete_user_service(userId)
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

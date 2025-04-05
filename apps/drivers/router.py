@@ -46,7 +46,7 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/delete_driver")
+@router.delete("/delete_driver/{id_conductor}")
 async def delete_driver(id_conductor: int):
     try:
         resultado = await delete_driver_service(id_conductor)

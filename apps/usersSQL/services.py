@@ -64,12 +64,12 @@ def update_user_service(user: UserUpdateSchema):
         if 'connection' in locals() and connection:
             connection.close()
 
-def delete_user_service(user_id: str):
+def delete_user_service(userId: int):
     try:
-        connection = conexiondb()
+        connection = conexiondb()   
         if connection:
             with connection.cursor() as cursor:
-                cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+                cursor.execute("DELETE FROM users WHERE id = %s", (userId,))
                 connection.commit()
             return {'success':True, "message": "Usuario eliminado Correctamente"}
         else:
