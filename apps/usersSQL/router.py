@@ -26,7 +26,6 @@ async def create_user(user: UserCreateSchema):
 @router.put("/update_user")
 async def update_user(user: UserUpdateSchema):
     try:
-        print(user)
         response = update_user_service(user)
         return response
     except Exception as e:

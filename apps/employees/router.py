@@ -1,7 +1,8 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
+from apps.employees.schema import EmployeeCreateSchema, UpdateEmployeeSchema
 from conexion.conexionBD import conexiondb
-from apps.employees.services import download_employees_report_service, get_all_employees_service, upload_file_service
+from apps.employees.services import create_employee_service, delete_empleado_services, download_employees_report_service, get_all_employees_service, update_employee_service, upload_file_service
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -26,42 +27,19 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post('/crear_empleado')
-async def crear_empleado(cc: int, nom: str, car: str, centro: str):
+@router.post('/create_employee')
+async def crear_empleado(employee: EmployeeCreateSchema):
     try:
-        conexion = conexiondb()
-        if not conexion:
-            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
-        
-        cursor = conexion.cursor()
-        query = """
-            INSERT INTO tbl_empleados (cc, nom, car, centro)
-            VALUES (%s, %s, %s, %s)
-        """
-        cursor.execute(query, (cc, nom, car, centro))
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-        return {"mensaje": "Empleado creado exitosamente"}
+            response = create_employee_service(employee)
+            return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/empleados/{cc}")
-async def eliminar_empleado(cc: int):
+@router.delete("/delete_employee/{CC}")
+async def delete_empleado(CC: int):
     try:
-        conexion = conexiondb()
-        if not conexion:
-            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
-        
-        cursor = conexion.cursor()
-        query = "DELETE FROM tbl_empleados WHERE cc = %s"
-        cursor.execute(query, (cc,))
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-        return {"mensaje": "Empleado eliminado exitosamente"}
+        response = delete_empleado_services(CC)
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -101,39 +79,11 @@ async def sql_detalles_empleadoBD(cc: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put('/actualizar_empleadoBD')
-async def actualizar_empleadoBD(cc: int, nom: str = None, car: str = None, centro: str = None):
+@router.put('/update_employee')
+async def update_employee(employee: UpdateEmployeeSchema):
     try:
-        conexion = conexiondb()
-        if not conexion:
-            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
-        
-        cursor = conexion.cursor()
-        query = "UPDATE tbl_empleados SET "
-        updates = []
-        params = []
-
-        if nom:
-            updates.append("nom = %s")
-            params.append(nom)
-        if car:
-            updates.append("car = %s")
-            params.append(car)
-        if centro:
-            updates.append("centro = %s")
-            params.append(centro)
-
-        if not updates:
-            raise HTTPException(status_code=400, detail="No se proporcionaron campos para actualizar")
-
-        query += ", ".join(updates) + " WHERE cc = %s"
-        params.append(cc)
-
-        cursor.execute(query, tuple(params))
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-
-        return {"mensaje": "Empleado actualizado exitosamente"}
+        response = update_employee_service(employee)
+        if not response:
+            raise HTTPException(status_code=404, detail="Empleado no encontrado")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

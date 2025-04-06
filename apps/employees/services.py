@@ -2,7 +2,8 @@ import datetime
 from io import BytesIO
 from flask import make_response
 import pandas as pd
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
+from apps.employees.schema import EmployeeCreateSchema, UpdateEmployeeSchema
 from conexion.conexionBD import conexiondb
 
 
@@ -88,27 +89,22 @@ async def upload_file_service(file: UploadFile):
 
 
 
-def eliminar_empleado(cc: int):
-    conexion = conexiondb()
-    if not conexion:
-        return {"error": "Error de conexión a la base de datos"}
-
+def delete_empleado_services(cc: int):
     try:
+        conexion = conexiondb()
+        if not conexion:
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
         cursor = conexion.cursor()
-        cursor.execute("DELETE FROM tbl_empleados WHERE cc = %s", (cc,))
+        query = "DELETE FROM tbl_empleados WHERE cc = %s"
+        cursor.execute(query, (cc,))
         conexion.commit()
-
-        if cursor.rowcount == 0:
-            return {"error": "Empleado no encontrado"}
-
-        return {"mensaje": "Empleado eliminado correctamente"}
-
-    except Exception as e:
-        return {"error": f"Error al eliminar empleado: {str(e)}"}
-
-    finally:
         cursor.close()
         conexion.close()
+
+        return {"mensaje": "Empleado eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def download_employees_report_service():
@@ -210,48 +206,38 @@ def sql_detalles_empleadoBD(cc):
         print(f"Error en sql_detalles_empleadoBD: {e}")
         return None
 
-def actualizar_empleadoBD(cc_original, cc, nom, car, centro):
+def update_employee_service(employee: UpdateEmployeeSchema):
     try:
-        with conexiondb() as conexion_MySQLdb:
-            with conexion_MySQLdb.cursor() as cursor:
-                querySQL = """
-                UPDATE tbl_empleados
-                SET 
-                    CC = %s,
-                    NOM = %s,
-                    CAR = %s,
-                    CENTRO = %s
-                WHERE CC = %s
-                """
-                cursor.execute(querySQL, (cc, nom, car, centro, cc_original))
-                conexion_MySQLdb.commit()
-                return True
+        conexion = conexiondb()
+        cursor = conexion.cursor()
+        cursor.execute(
+                    "UPDATE tbl_empleados SET NOM = %s, CAR = %s, CENTRO = %s , CASH = %s, SAC = %s, `CHECK` = %s, `MOD` = %s, ER = %s, PARADAS = %s, PERFORMANCE = %s WHERE CC = %s",
+                    (employee.NOM, employee.CAR, employee.CENTRO, None, None, None, None, None, None, None, employee.CC)
+                )
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+        return {"mensaje": "Empleado actualizado exitosamente"}
+        
     except Exception as e:
         print(f"Error en actualizar_empleadoBD: {e}")
         return False
 
-def crear_empleado(cc, nom, car, centro, conexiondb):
+def create_employee_service(employee: EmployeeCreateSchema):
     try:
-        cursor = conexiondb.cursor()
-
-        sql = '''
-            INSERT INTO tbl_empleados (
-                CC, NOM, CAR, CENTRO, CASH, SAC, `CHECK`, MOD, ER, PARADAS, PERFORMANCE
-            ) VALUES (
-                %s, %s, %s, %s,
-                '0', '0', '0', '0', '0', '0', '0'
-            )
-        '''
-
-        valores = (cc, nom, car, centro)
-
-        cursor.execute(sql, valores)
-        conexiondb.commit()
-
-        print(" Empleado creado correctamente.")
+        conexion = conexiondb()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "INSERT INTO tbl_empleados (CC, NOM, CAR, CENTRO, CASH, SAC, `CHECK`, `MOD`, ER, PARADAS, PERFORMANCE) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (employee.CC, employee.NOM, employee.CAR, employee.CENTRO, None, None, None, None, None, None, None)
+        )
+        cursor.close()
+        conexion.commit()
+        conexion.close()
+        return {'success': True, "message": "Empleado creado correctamente"}
 
     except Exception as e:
         print(f" Error al crear el empleado: {e}")
+    return {'success': False, "message": "Error al crear el empleado"}
 
-    finally:
-        cursor.close()
+    
