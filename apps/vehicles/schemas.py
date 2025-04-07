@@ -1,40 +1,55 @@
 from datetime import date
 from pydantic import BaseModel
 
-class DriverSchema(BaseModel):
-    cedula: int;
-    nombre_apellido: str;
-    cargo: str;
-    vencimiento_licencia: date;
-    dias_restantes_licencia: int;
-    comparendos: str;
-    acuerdo_pago: str;
-    vencimiento_curso: date;
-    dias_restantes_curso: int;
+class VehiclesSchema(BaseModel):
+    ubicacion: str;
+    placa: str;
+    numero_motor: str;
+    color_cabina: str;
+    marca: str;
+    linea: str;
+    modelo: str;
+    vencimiento_soat: date;
+    dias_vigentes_soat: int;
+    vencimiento_rtm: date;
+    dias_vigentes_rtm: int;
+    vencimiento_permiso: date;
+    dias_vigentes_permiso: int;
+    vencimiento_extintor: date;
+    dias_vigentes_extintor: int;
 
-    class Config:
-        from_attributes = True  # Para compatibilidad con ORMs
+class VehiclesCreateSchema(BaseModel):
+    id: int;
+    ubicacion: str;
+    placa: str;
+    numero_motor: str;
+    color_cabina: str;
+    marca: str;
+    linea: str;
+    modelo: str;
+    vencimiento_soat: date;
+    dias_vigentes_soat: int;
+    vencimiento_rtm: date;
+    dias_vigentes_rtm: int;
+    vencimiento_permiso: date;
+    dias_vigentes_permiso: int;
+    vencimiento_extintor: date;
+    dias_vigentes_extintor: int;
 
-class DriverCreateSchema(BaseModel):
-    id_conductor: int | None = None 
-    cedula: int;
-    nombre_apellido: str;
-    cargo: str;
-    vencimiento_licencia: date;
-    dias_restantes_licencia: int;
-    comparendos: str;
-    acuerdo_pago: str;
-    vencimiento_curso: date;
-    dias_restantes_curso: int;
-
-class DriverUpdateSchema(BaseModel):
-    id_conductor: int;
-    cedula: int;
-    nombre_apellido: str;
-    cargo: str;
-    vencimiento_licencia: date;
-    dias_restantes_licencia: int;
-    comparendos: str;
-    acuerdo_pago: str;
-    vencimiento_curso: date;
-    dias_restantes_curso: int;
+class VehiclesUpdateSchema(BaseModel):
+    id: int;
+    ubicacion: str;
+    placa: str;
+    numero_motor: str;
+    color_cabina: str;
+    marca: str;
+    linea: str;
+    modelo: str;
+    vencimiento_soat: date;
+    dias_vigentes_soat: int;
+    vencimiento_rtm: date;
+    dias_vigentes_rtm: int;
+    vencimiento_permiso: date;
+    dias_vigentes_permiso: int;
+    vencimiento_extintor: date;
+    dias_vigentes_extintor: int;

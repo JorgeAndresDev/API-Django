@@ -66,7 +66,7 @@ def create_driver_service(driver_data: DriverCreateSchema):
         connection.close()
         if 'connection' in locals():
             connection.close()
-        return {'success':True, "message": "Usuario creado Correctamente"}
+        return {'success':True, "message": "Conductor creado Correctamente"}
     except Exception as e:
         return {"error": str(e)}
     

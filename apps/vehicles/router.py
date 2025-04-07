@@ -1,18 +1,15 @@
-import datetime
-from io import BytesIO
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-import pandas as pd
-from apps.drivers.schemas import DriverCreateSchema, DriverUpdateSchema
-from apps.drivers.services import create_driver_service, delete_driver_service, get_all_drivers_service, update_driver_service, upload_file_service
+from apps.vehicles.schemas import VehiclesCreateSchema, VehiclesUpdateSchema
+from apps.vehicles.services import create_vehicle_service, delete_vehicle_service, get_all_vehicles_service, update_vehicle_service, upload_file_service
 
-router = APIRouter(prefix="/drivers", tags=["Conductores"])
+router = APIRouter(prefix="/vehicles", tags=["Vehiculos"])
 
-@router.get("/get_all_drivers")
-async def get_all_drivers():
+@router.get("/get_all_vehicles")
+async def get_all_vehicles():
     try:
         # Obtener todos los conductores desde el servicio
-        conductores = get_all_drivers_service()
+        conductores = get_all_vehicles_service()
         if conductores is None:
             return JSONResponse({"error": "No se pudieron obtener los conductores"}, status_code=500)
         return conductores
@@ -20,18 +17,18 @@ async def get_all_drivers():
         # Manejar errores y devolver una respuesta de error 500
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/create_driver")
-async def create_driver(driver: DriverCreateSchema):
+@router.post("/create_vehicle")
+async def create_vehicle(vehicle: VehiclesCreateSchema):
     try:
-        response = create_driver_service(driver)
+        response = create_vehicle_service(vehicle)
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/update_driver")
-async def update_driver(driver: DriverUpdateSchema):
+@router.post("/update_vehicle")
+async def update_vehicle(vehicle: VehiclesUpdateSchema):
     try:
-        response = update_driver_service(driver)
+        response = update_vehicle_service(vehicle)
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -46,10 +43,10 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/delete_driver/{id_conductor}")
-async def delete_driver(id_conductor: int):
+@router.delete("/delete_vehicle/{id}")
+async def delete_vehicle(id: int):
     try:
-        resultado = await delete_driver_service(id_conductor)
+        resultado = await delete_vehicle_service(id)
         return resultado
     except HTTPException as he:
         raise he
