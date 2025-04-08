@@ -120,3 +120,23 @@ CREATE TABLE IF NOT EXISTS `tbl_conductores` (
   `dias_restantes_curso` INT DEFAULT NULL,
   PRIMARY KEY (`id_conductor`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE IF NOT EXISTS `tbl_vehiculos` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+    `ubicacion` VARCHAR(50) DEFAULT NULL, 
+    `placa` VARCHAR(50) DEFAULT NULL, 
+    `numero_motor` VARCHAR(50) DEFAULT NULL, 
+    `color_cabina` VARCHAR(50) DEFAULT NULL, 
+    `marca` VARCHAR(50) DEFAULT NULL, 
+    `linea` VARCHAR(50) DEFAULT NULL, 
+    `modelo` VARCHAR(50) DEFAULT NULL, 
+    `vencimiento_soat` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `dias_vigentes_soat` INT DEFAULT NULL,
+    `vencimiento_rtm` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `dias_vigentes_rtm` INT DEFAULT NULL,
+    `vencimiento_permiso` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `dias_vigentes_permiso` INT DEFAULT NULL,
+    `vencimiento_extintor` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `dias_vigentes_extintor` INT DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
