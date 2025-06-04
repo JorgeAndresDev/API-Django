@@ -17,7 +17,14 @@ def get_all_employees_service():
                         CC,                         
                         NOM,                         
                         CAR,                         
-                        CENTRO                                            
+                        CENTRO,
+                        CASH,
+                        SAC,
+                        `CHECK`,
+                        `MOD`,
+                        ER,
+                        PARADAS,
+                        PERFORMANCE                                            
                     FROM tbl_empleados                     
                     ORDER BY CC DESC                 
                 """                 

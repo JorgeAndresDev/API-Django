@@ -6,7 +6,7 @@ def conexiondb():
             host="localhost",
             port=3306,
             user="root",
-            passwd="1234",
+            passwd="Jorge123",
             database="app_empresa_bd",
             charset='utf8mb4',
             collation='utf8mb4_unicode_ci',
