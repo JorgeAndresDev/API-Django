@@ -37,7 +37,8 @@ async def upload_file_service(file: UploadFile):
         contents = await file.read()
         
         try:
-            df = pd.read_excel(BytesIO(contents), sheet_name=0)
+            df = pd.read_excel(BytesIO(contents), sheet_name='Hoja2') #en esta parte del codigo espedificamos la hoja que queremos leer
+            
         except Exception as e:
             return {"error": f"Error al leer el archivo Excel: {str(e)}"}
 
