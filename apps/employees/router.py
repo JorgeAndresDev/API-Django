@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from apps.employees.schema import EmployeeCreateSchema, UpdateEmployeeSchema
 from conexion.conexionBD import conexiondb
-from apps.employees.services import create_employee_service, delete_empleado_services, download_employees_report_service, get_all_employees_service, update_employee_service, upload_file_service
+from apps.employees.services import create_employee_service, delete_empleado_services, download_employees_report_service, get_all_employees_service, update_employee_service, upload_cashless
 
 router = APIRouter(prefix="/employees", tags=["Employees"])
 
@@ -19,7 +19,7 @@ async def get_all_employees():
 @router.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        data = await upload_file_service(file)
+        data = await upload_cashless(file)
         if "error" in data:
             return JSONResponse(data, status_code=400)
         return JSONResponse(data, status_code=200)

@@ -40,7 +40,7 @@ def get_all_employees_service():
         if connection:             
             connection.close()
 
-async def upload_file_service(file: UploadFile):
+async def upload_cashless(file: UploadFile):
     try:
         # Volver a posicionar el puntero para leer el archivo
         file.file.seek(0)

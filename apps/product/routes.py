@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from .services import get_all_products, update_product, delete_product, create_product
 from .schemas import ProductSchema, ProductUpdateSchema, ProductCreateSchema
-from typing import List
 
 # Crear un router para los endpoints de productos
 router = APIRouter(prefix="/products", tags=["products"])

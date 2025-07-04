@@ -1,38 +1,45 @@
 from io import BytesIO
-from fastapi import FastAPI, UploadFile, File
+from fastapi import  UploadFile
 import pandas as pd
+from apps.cashless.schemas import UpdateCashlessSchema
 from conexion.conexionBD import conexiondb
 
 
+# apps/cashless/service.py
 def get_all_cashless_service():
     try:
         connection = conexiondb()
         if connection:
             with connection.cursor(dictionary=True) as cursor:
-                querySQL = """                     
-                    SELECT                         
-                        CODIGO,
-                        CLIENTE,                         
-                        DT,                         
-                        PLACA,
-                        NUMERO,
-                        NOVEDAD                                                                  
-                    FROM tbl_cashless                                    
-                """ 
+                querySQL = """
+                                SELECT 
+                                    CODIGO AS codigo_cliente,
+                                    CLIENTE AS cliente_nombre,
+                                    DT AS Documento_pedido,
+                                    PLACA AS placa_vehiculo,
+                                    NUMERO AS numero_cliente,
+                                    NOVEDAD AS Novedad
+                                FROM tbl_cashless
+                            """
                 cursor.execute(querySQL)                 
-                app_empresa_bd = cursor.fetchall()                 
-                return app_empresa_bd
+                app_empresa_bd = cursor.fetchall()  # Esto ya devuelve un array
+                
+                # AGREGAR ESTE PRINT PARA DEBUGGING
+                print(f"Tipo de datos: {type(app_empresa_bd)}")
+                print(f"Cantidad de registros: {len(app_empresa_bd) if app_empresa_bd else 0}")
+                
+                return app_empresa_bd  # Devolver directamente, no envolver en array
         else:             
-            return None     
+            return []  # Devolver array vacío en lugar de None
     except Exception as e:         
         print(f"Error en la función get_all_cashless: {e}")         
-        return None     
+        return []  # Devolver array vacío en lugar de None
     finally:         
         if connection:             
             connection.close()
 
 
-async def upload_file_service(file: UploadFile):
+async def upload_cashless_service(file: UploadFile):
     try:
         contents = await file.read()
         
@@ -125,5 +132,22 @@ async def upload_file_service(file: UploadFile):
     except Exception as e:
         return {"error": f"Error inesperado: {str(e)}"}
 
-
+def update_cashless_service(cashless: UpdateCashlessSchema):
+    try:
+        connection = conexiondb()
+        if connection:
+            with connection.cursor() as cursor:
+                cursor.execute ( 
+                    "UPDATE tbl_cashless SET NOVEDAD = %s WHERE CODIGO = %s"
+                , ( cashless.NOVEDAD, cashless.CODIGO))
+                connection.commit()
+                return {"success": True, "message": "Registro actualizado correctamente"}
+        else:
+            return {"error": "No se pudo conectar a la base de datos"}
+    except Exception as e:
+        print(f"Error en la función update_cashless: {e}")
+        return {"error": str(e)}
+    finally:
+        if connection:
+            connection.close()
      

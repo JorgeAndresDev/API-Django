@@ -3,8 +3,6 @@ from apps.safe.services import procesar_form_inspeccion_caja, obtener_inspeccion
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi import HTTPException
-from pydantic import BaseModel
-from typing import Optional
 import traceback
 
 router = APIRouter(prefix='/safe', tags=['safe'])

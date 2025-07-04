@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from apps.vehicles.schemas import VehiclesCreateSchema, VehiclesUpdateSchema
-from apps.vehicles.services import create_vehicle_service, delete_vehicle_service, get_all_vehicles_service, update_vehicle_service, upload_file_service
+from apps.vehicles.services import create_vehicle_service, delete_vehicle_service, get_all_vehicles_service, update_vehicle_service, upload_cashless
 
 router = APIRouter(prefix="/vehicles", tags=["Vehiculos"])
 
@@ -36,7 +36,7 @@ async def update_vehicle(vehicle: VehiclesUpdateSchema):
 @router.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        data = await upload_file_service(file)
+        data = await upload_cashless(file)
         if "error" in data:
             return JSONResponse(data, status_code=400)
         return JSONResponse(data, status_code=200)

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from apps.auth.router import auth
 from apps.user.router import router as users_router
 from apps.product.routes import router as products_router
@@ -6,10 +6,9 @@ from apps.employees.router import router as employees_router
 from apps.usersSQL.router import router as usersSQl_router
 from apps.drivers.router import router as conductores_router
 from apps.vehicles.router import router as vehicles_router
-from apps.cashless.router import router as cashless_router
 from fastapi.middleware.cors import CORSMiddleware
-# from apps.botiquin.router import router as botiquin_router
 from apps.safe.router import router as safe_router
+from apps.cashless.router import router as cashless_router  # Importar el router
 
 # Crear la aplicación FastAPI
 app = FastAPI()
@@ -46,11 +45,11 @@ app.include_router(usersSQl_router)
 # Registrar rutas para listar usuariosSQL
 app.include_router(conductores_router)
 
+# Registrar rutas para listar vehículos
 app.include_router(vehicles_router)
-
-# app.include_router(botiquin_router)
 
 app.include_router(safe_router)
 
+# Registrar rutas para cashless
 app.include_router(cashless_router)
 
