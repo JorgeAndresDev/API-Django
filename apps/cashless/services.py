@@ -1,5 +1,5 @@
 from io import BytesIO
-from fastapi import  UploadFile
+from fastapi import  HTTPException, UploadFile
 import pandas as pd
 from apps.cashless.schemas import UpdateCashlessSchema
 from conexion.conexionBD import conexiondb
@@ -37,7 +37,6 @@ def get_all_cashless_service():
     finally:         
         if connection:             
             connection.close()
-
 
 async def upload_cashless_service(file: UploadFile):
     try:
@@ -150,4 +149,21 @@ def update_cashless_service(cashless: UpdateCashlessSchema):
     finally:
         if connection:
             connection.close()
+
+def delete_cashless_services(codigo_cliente: int):
+    try:
+        conexion = conexiondb()
+        if not conexion:
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
+        cursor = conexion.cursor()
+        query = "DELETE FROM tbl_cashless WHERE CODIGO = %s"
+        cursor.execute(query, (codigo_cliente,))
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+
+        return {"mensaje": "Cliente eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
      

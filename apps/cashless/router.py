@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from conexion.conexionBD import conexiondb
 from apps.cashless.schemas import CashlessSchema, UpdateCashlessSchema
-from apps.cashless.services import get_all_cashless_service, update_cashless_service, upload_cashless_service
+from apps.cashless.services import delete_cashless_services, get_all_cashless_service, update_cashless_service, upload_cashless_service
 
 
 
@@ -20,7 +20,7 @@ async def get_all_cashless():
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.post("/upload_cashless")
+@router.post("/upload_file")
 async def upload_cashless(file: UploadFile = File(...)):
     try:
         data = await upload_cashless_service(file)
@@ -30,6 +30,21 @@ async def upload_cashless(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/casless/update_cashless")
-def update_cashless_endpoint(cashless: UpdateCashlessSchema):
-    return update_cashless_service(cashless)
+@router.put("/update_cashless")
+async def update_cashless(cashless: UpdateCashlessSchema):
+    try:
+        response = update_cashless_service(cashless)
+        if not response:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/delete_cashless/{codigo_cliente}")
+async def delete_empleado(codigo_cliente: int):
+    try:
+        response = delete_cashless_services(codigo_cliente=codigo_cliente)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

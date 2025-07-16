@@ -43,8 +43,6 @@ async def delete_empleado(CC: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    
-from fastapi.responses import FileResponse
 
 @router.get('/descargar-informe-empleados')
 async def descargar_informe_empleados():

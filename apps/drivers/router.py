@@ -4,7 +4,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 import pandas as pd
 from apps.drivers.schemas import DriverCreateSchema, DriverUpdateSchema
-from apps.drivers.services import create_driver_service, delete_driver_service, get_all_drivers_service, update_driver_service, upload_cashless
+from apps.drivers.services import create_driver_service, delete_driver_service, get_all_drivers_service, update_driver_service,  upload_driver
 
 router = APIRouter(prefix="/drivers", tags=["Conductores"])
 
@@ -28,7 +28,7 @@ async def create_driver(driver: DriverCreateSchema):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.post("/update_driver")
+@router.put("/update_driver")
 async def update_driver(driver: DriverUpdateSchema):
     try:
         response = update_driver_service(driver)
@@ -39,7 +39,7 @@ async def update_driver(driver: DriverUpdateSchema):
 @router.post("/upload_file")
 async def upload_file(file: UploadFile = File(...)):
     try:
-        data = await upload_cashless(file)
+        data = await upload_driver(file)
         if "error" in data:
             return JSONResponse(data, status_code=400)
         return JSONResponse(data, status_code=200)

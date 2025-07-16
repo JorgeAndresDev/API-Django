@@ -91,7 +91,7 @@ def update_driver_service(driver: DriverUpdateSchema):
         if 'connection' in locals() and connection:
             connection.close()
 
-async def upload_cashless(file: UploadFile):
+async def upload_driver(file: UploadFile):
     try:
         # Volver a posicionar el puntero para leer el archivo
         file.file.seek(0)
