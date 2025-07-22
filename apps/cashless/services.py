@@ -132,20 +132,29 @@ async def upload_cashless_service(file: UploadFile):
         return {"error": f"Error inesperado: {str(e)}"}
 
 def update_cashless_service(cashless: UpdateCashlessSchema):
+    connection = None
     try:
         connection = conexiondb()
         if connection:
             with connection.cursor() as cursor:
-                cursor.execute ( 
-                    "UPDATE tbl_cashless SET NOVEDAD = %s WHERE CODIGO = %s"
-                , ( cashless.NOVEDAD, cashless.CODIGO))
+                # Usar los nombres originales de la DB
+                sql = "UPDATE tbl_cashless SET NOVEDAD = %s WHERE CODIGO = %s"
+                
+                # Acceder a los valores usando los nombres del modelo (no los alias)
+                cursor.execute(sql, (cashless.Novedad, cashless.codigo_cliente))
                 connection.commit()
-                return {"success": True, "message": "Registro actualizado correctamente"}
-        else:
-            return {"error": "No se pudo conectar a la base de datos"}
+
+                if cursor.rowcount > 0:
+                    return {"success": True, "message": "Registro actualizado correctamente"}
+                else:
+                    return {"success": False, "message": "No se encontró un registro con ese código"}
+
+        return {"error": "No se pudo conectar a la base de datos"}
+
     except Exception as e:
-        print(f"Error en la función update_cashless: {e}")
-        return {"error": str(e)}
+        print(f"Error en update_cashless_service: {e}")
+        return {"error": f"Ocurrió un error: {str(e)}"}
+
     finally:
         if connection:
             connection.close()
